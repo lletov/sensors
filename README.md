@@ -121,3 +121,4 @@ src/
 | `useSensorStore` | — | records in memory (loaded from IDB) |
 | `useSettingsStore` | localStorage | theme, highTempThreshold |
 | `useUIStore` | — | modal open/close flags |
+
