@@ -50,10 +50,15 @@ export function Header() {
         </div>
 
         {/* Last updated */}
-        <div className="text-xs text-gray-500 font-mono-data hidden md:block shrink-0">
-          {lastUpdated
-            ? `Обновлено ${formatLastUpdated(lastUpdated)}`
-            : 'Нет данных'}
+        <div className="text-[10px] sm:text-xs text-gray-500 font-mono-data shrink-0 text-right leading-tight">
+          {lastUpdated ? (
+            <>
+              Обновлено <br className="sm:hidden" />
+              {formatLastUpdated(lastUpdated)}
+            </>
+          ) : (
+            'Нет данных'
+          )}
         </div>
 
         {/* Refresh */}
