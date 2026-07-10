@@ -11,6 +11,7 @@ import { useSensorStore, useUIStore } from '@/app/store'
 import { fetchLatestFromSupabase } from '@/features/sensor-data/api/fetchSensorData'
 import { mergeReadings, getAllReadings } from '@/shared/lib/indexeddb'
 import { mergeRecords } from '@/features/sensor-data/lib/mergeRecords'
+import { formatLastUpdated } from '@/shared/helpers'
 
 export function Header() {
   const { isLoading, lastUpdated, setLoading, setLastUpdated, setRecords, resetDisplay } =
@@ -26,7 +27,9 @@ export function Header() {
       const merged = mergeRecords(existing, incoming)
       await mergeReadings(incoming)
       setRecords(merged)
-      setLastUpdated(new Date())
+
+      setLastUpdated(new Date().toISOString())
+
       resetDisplay()
     } catch (err) {
       console.error('Refresh failed:', err)
@@ -49,7 +52,7 @@ export function Header() {
         {/* Last updated */}
         <div className="text-xs text-gray-500 font-mono-data hidden md:block shrink-0">
           {lastUpdated
-            ? `Обновлено в ${format(lastUpdated, 'HH:mm:ss', { locale: ru })}`
+            ? `Обновлено ${formatLastUpdated(lastUpdated)}`
             : 'Нет данных'}
         </div>
 

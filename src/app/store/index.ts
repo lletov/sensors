@@ -21,26 +21,38 @@ export const useAuthStore = create<AuthState>()((set) => ({
 interface SensorState {
   records: SensorReading[]
   displayCount: number
-  lastUpdated: Date | null
+  lastUpdated: string | null // Изменено на string для безопасной сериализации (если стор решите сохранить в будущем)
   isLoading: boolean
   setRecords: (records: SensorReading[]) => void
   loadMore: () => void
   setLoading: (v: boolean) => void
-  setLastUpdated: (d: Date) => void
+  setLastUpdated: (isoString: string) => void
   resetDisplay: () => void
 }
 
-export const useSensorStore = create<SensorState>()((set) => ({
-  records: [],
-  displayCount: PAGE_SIZE,
-  lastUpdated: null,
-  isLoading: false,
-  setRecords: (records) => set({ records }),
-  loadMore: () => set((s) => ({ displayCount: s.displayCount + PAGE_SIZE })),
-  setLoading: (isLoading) => set({ isLoading }),
-  setLastUpdated: (lastUpdated) => set({ lastUpdated }),
-  resetDisplay: () => set({ displayCount: PAGE_SIZE }),
-}))
+// ─── Sensor data (source of truth = IndexedDB, status = persisted to localStorage) ───
+
+export const useSensorStore = create<SensorState>()(
+  persist(
+    (set) => ({
+      records: [],
+      displayCount: PAGE_SIZE,
+      lastUpdated: null,
+      isLoading: false,
+      setRecords: (records) => set({ records }),
+      loadMore: () => set((s) => ({ displayCount: s.displayCount + PAGE_SIZE })),
+      setLoading: (isLoading) => set({ isLoading }),
+      setLastUpdated: (lastUpdated) => set({ lastUpdated }),
+      resetDisplay: () => set({ displayCount: PAGE_SIZE }),
+    }),
+    {
+      name: 'sensor-data-storage', // Уникальный ключ в localStorage
+      // Сохраняем ТОЛЬКО lastUpdated, чтобы не забивать localStorage массивом records
+      partialize: (state) => ({ lastUpdated: state.lastUpdated }),
+    }
+  )
+)
+
 
 // ─── Settings (persisted to localStorage) ─────────────────────────────────
 
@@ -51,16 +63,19 @@ interface SettingsState {
   setHighTempThreshold: (v: number) => void
 }
 
+// Корректная и чистая типизация middleware persist для TypeScript
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      theme: 'dark' as 'light' | 'dark',
+      theme: 'dark',
       highTempThreshold: DEFAULT_HIGH_TEMP_THRESHOLD,
       toggleTheme: () =>
         set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
       setHighTempThreshold: (highTempThreshold) => set({ highTempThreshold }),
     }),
-    { name: 'sensor-settings' }
+    {
+      name: 'sensor-settings',
+    }
   )
 )
 
